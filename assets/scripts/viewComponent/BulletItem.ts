@@ -1,4 +1,4 @@
-import { _decorator, Component, BoxCollider2D, Vec2, Node, Vec3, Contact2DType } from 'cc';
+import { _decorator, Component, BoxCollider2D, Vec2, Node, Vec3, Contact2DType, UITransform } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('BulletItem')
@@ -6,44 +6,47 @@ export class BulletItem extends Component {
     @property(BoxCollider2D)
     private collider: BoxCollider2D = null;
 
-    public speed: number = 300; // 子彈速度
-    private onHitCallback: () => void; // 子彈擊中時的回調函數
-
+    public speed: number = 300;
+    private onRecyclrCallback: (bulletItem: BulletItem) => void;
+    private canvasHeight: number
     start() {
         if (this.collider) {
-            this.collider.on(Contact2DType.BEGIN_CONTACT, this.onHit, this);
+            this.collider.on(Contact2DType.BEGIN_CONTACT, this.onHit, this)
         }
+        this.canvasHeight = this.node.parent.getComponent(UITransform).height
     }
 
-    public init(pos: Vec2, cb: () => void) {
-        this.node.setPosition(pos.x, pos.y, 0); 
-        this.onHitCallback = cb; 
+    public init(pos: Vec3, cb: (bulletItem: BulletItem) => void) {
+        this.node.setPosition(pos.x, pos.y, 0)
+        this.onRecyclrCallback = cb
     }
 
     public show() {
-        this.node.active = true;
+        this.node.active = true
     }
 
     public hide() {
-        this.node.active = false;
+        this.node.active = false
     }
 
     private onHit() {
-        console.log("子彈擊中！");
-        if (this.onHitCallback) {
-            this.onHitCallback(); // 執行回調
+        console.log("子彈擊中！")
+        if (this.onRecyclrCallback) {
+            this.onRecyclrCallback(this)
         }
-        this.hide(); // 碰撞後隱藏子彈（可回收）
     }
 
     update(deltaTime: number) {
         if (this.node.active) {
-            let moveDistance = this.speed * deltaTime;
+            let moveDistance = this.speed * deltaTime
             this.node.setPosition(
                 this.node.position.x,
                 this.node.position.y + moveDistance,
                 this.node.position.z
-            );
+            )
+        }
+        if (this.node.position.y > this.canvasHeight / 2 + 20){
+            this.onRecyclrCallback(this)
         }
     }
 }
