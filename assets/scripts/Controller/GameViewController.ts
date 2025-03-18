@@ -1,6 +1,7 @@
-import { _decorator, CCInteger, Node, Component, Prefab, Pool, NodePool, instantiate, Vec2,  } from 'cc';
+import { _decorator, CCInteger, Node, Component, Prefab, Pool, NodePool, instantiate, Vec2, PhysicsSystem2D, UITransform, randomRange, Vec3, } from 'cc';
 import { GunView } from '../viewComponent/GunView';
 import { BulletItem } from '../viewComponent/BulletItem';
+import { BoyItem } from '../viewComponent/BoyItem';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameViewController')
@@ -9,36 +10,70 @@ export class GameViewController extends Component {
     private bulletPrefab: Prefab
     @property(GunView)
     private gunView: GunView
+    @property(Prefab)
+    private boyItemPrefab: Prefab
+    @property(Node)
+    private boyLayout: Node
 
-    private bulletViews: BulletItem[] = []
     private bulletPool: NodePool = new NodePool()
+    private boyItemPool: NodePool = new NodePool()
+    private boyRate: number = 2
+
 
     protected onLoad(): void {
         this.gunView.init(this.spawnBullet.bind(this))
+        PhysicsSystem2D.instance.enable = true
+        this.schedule(this.spawnBoy, this.boyRate)
     }
 
-    spawnBullet(): BulletItem {
-        let bullet: BulletItem;
-        if (this.bulletPool.size() > 0) {
-            bullet = this.bulletPool.get().getComponent(BulletItem); // 取出子彈
+    private spawnBoy() {
+        let boyNode: Node
+        if (this.boyItemPool.size() > 0) {
+            boyNode = this.boyItemPool.get()
         } else {
-            let bulletNode = instantiate(this.bulletPrefab);
-            bullet = bulletNode.getComponent(BulletItem);
+            boyNode = instantiate(this.boyItemPrefab)
         }
-        bullet.node.parent = this.node
-        this.bulletViews.push(bullet);
-        return bullet;
+
+        let canvasWidth = this.boyLayout.getComponent(UITransform).width
+        let isLeft = Math.random() < 0.5
+        let spawnX = isLeft ? -canvasWidth / 2 - 50 : canvasWidth / 2 + 50
+
+        let canvasHeight = this.boyLayout.getComponent(UITransform).height
+        let minY = -canvasHeight / 2 + 50
+        let maxY = canvasHeight / 2 - 50
+        let spawnY = randomRange(minY, maxY)
+
+        boyNode.parent = this.boyLayout
+        boyNode.getComponent(BoyItem).init(new Vec3(spawnX, spawnY, 0), this.recycleBoy.bind(this))
+
     }
 
-    recycleBullet(bullet: BulletItem) {
-        bullet.node.removeFromParent();
-        this.bulletPool.put(bullet.node); // 回收子彈
+    private recycleBoy(boy: BoyItem) {
+        boy.node.removeFromParent()
+        this.boyItemPool.put(boy.node)
+    }
+
+    private spawnBullet() {
+        let bullet: BulletItem
+        if (this.bulletPool.size() > 0) {
+            bullet = this.bulletPool.get().getComponent(BulletItem)
+        } else {
+            let bulletNode = instantiate(this.bulletPrefab)
+            bullet = bulletNode.getComponent(BulletItem)
+        }
+        bullet.init(this.gunView.node.position, this.recycleBullet.bind(this))
+        bullet.node.parent = this.node
+    }
+
+    private recycleBullet(bullet: BulletItem) {
+        bullet.node.removeFromParent()
+        this.bulletPool.put(bullet.node)
     }
 }
 
-export enum PlayType {
-    Win,
-    End,
-    Game_Over
+export enum colliderGroup {
+    Default = 1,
+    Boy = 2,
+    Bullet = 3,
 }
 
