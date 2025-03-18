@@ -1,4 +1,4 @@
-import { _decorator, CCInteger, Node, Component, Prefab, Pool, NodePool, instantiate, Vec2, PhysicsSystem2D, UITransform, randomRange, Vec3, } from 'cc';
+import { _decorator, Node, Component, Prefab, NodePool, instantiate, PhysicsSystem2D, UITransform, randomRange, Vec3, } from 'cc';
 import { GunView } from '../viewComponent/GunView';
 import { BulletItem } from '../viewComponent/BulletItem';
 import { BoyItem } from '../viewComponent/BoyItem';
@@ -17,6 +17,7 @@ export class GameViewController extends Component {
 
     private bulletPool: NodePool = new NodePool()
     private boyItemPool: NodePool = new NodePool()
+    @property
     private boyRate: number = 2
 
 

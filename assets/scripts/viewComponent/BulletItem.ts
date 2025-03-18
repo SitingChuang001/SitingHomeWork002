@@ -1,4 +1,4 @@
-import { _decorator, Component, BoxCollider2D, Vec2, Node, Vec3, Contact2DType, UITransform } from 'cc';
+import { _decorator, Component, BoxCollider2D, Vec3, Contact2DType, UITransform } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('BulletItem')
@@ -19,14 +19,6 @@ export class BulletItem extends Component {
     public init(pos: Vec3, cb: (bulletItem: BulletItem) => void) {
         this.node.setPosition(pos.x, pos.y, 0)
         this.onRecyclrCallback = cb
-    }
-
-    public show() {
-        this.node.active = true
-    }
-
-    public hide() {
-        this.node.active = false
     }
 
     private onHit() {

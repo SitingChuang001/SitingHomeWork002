@@ -25,7 +25,6 @@ export class GunView extends Component {
         // 監聽按鍵按下事件
         input.on(Input.EventType.KEY_DOWN, this.onKeyDown, this)
         input.on(Input.EventType.KEY_UP, this.onKeyUp, this)
-
     }
 
     //設定最遠邊界
@@ -62,6 +61,11 @@ export class GunView extends Component {
             event.keyCode === KeyCode.ARROW_RIGHT || event.keyCode === KeyCode.KEY_D) {
             this.moveDirection = 0 // 停止移動
         }
+    }
+
+    protected onDestroy(): void {
+        input.off(Input.EventType.KEY_DOWN, this.onKeyDown, this)
+        input.off(Input.EventType.KEY_UP, this.onKeyUp, this)
     }
 
     update(deltaTime: number) {

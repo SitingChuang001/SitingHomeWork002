@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, BoxCollider2D, Contact2DType, Vec3, sp } from 'cc';
+import { _decorator, Component, BoxCollider2D, Contact2DType, Vec3, sp, UITransform } from 'cc';
 import { colliderGroup } from '../Controller/GameViewController';
 const { ccclass, property } = _decorator;
 
@@ -18,7 +18,7 @@ export class BoyItem extends Component {
 
     onLoad() {
         this.initScaleX = this.node.scale.x
-        this.canvasWidth = this.node.parent.width
+        this.canvasWidth = this.node.parent.getComponent(UITransform).width
         if (this.collider) {
             this.collider.on(Contact2DType.BEGIN_CONTACT, this.onHit, this)
         }
@@ -59,7 +59,6 @@ export class BoyItem extends Component {
             }
 
             this.animator.setAnimation(0, animationName, false)
-
             this.animator.setCompleteListener((trackEntry) => {
                 if (trackEntry.animation.name === animationName) {
                     if (cb)
