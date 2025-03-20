@@ -4,10 +4,11 @@ const { ccclass, property } = _decorator;
 @ccclass('BulletItem')
 export class BulletItem extends Component {
     @property(BoxCollider2D)
-    private collider: BoxCollider2D = null;
+    private collider: BoxCollider2D = null
 
-    public speed: number = 300;
-    private onRecyclrCallback: (bulletItem: BulletItem) => void;
+    public speed: number = 300
+    private onRecycleCallback: (bulletItem: BulletItem) => void
+    private onNoUseRecycleCallback: (bulletItem: BulletItem) => void
     private canvasHeight: number
     start() {
         if (this.collider) {
@@ -16,15 +17,16 @@ export class BulletItem extends Component {
         this.canvasHeight = this.node.parent.getComponent(UITransform).height
     }
 
-    public init(pos: Vec3, cb: (bulletItem: BulletItem) => void) {
+    public init(pos: Vec3, useCb: (bulletItem: BulletItem) => void, noUseCb: (bulletItem: BulletItem) => void) {
         this.node.setPosition(pos.x, pos.y, 0)
-        this.onRecyclrCallback = cb
+        this.onRecycleCallback = useCb
+        this.onNoUseRecycleCallback = noUseCb
     }
 
     private onHit() {
         console.log("子彈擊中！")
-        if (this.onRecyclrCallback) {
-            this.onRecyclrCallback(this)
+        if (this.onRecycleCallback) {
+            this.onRecycleCallback(this)
         }
     }
 
@@ -37,8 +39,8 @@ export class BulletItem extends Component {
                 this.node.position.z
             )
         }
-        if (this.node.position.y > this.canvasHeight / 2 + 20){
-            this.onRecyclrCallback(this)
+        if (this.node.position.y > this.canvasHeight / 2 + 20) {
+            this.onNoUseRecycleCallback(this)
         }
     }
 }
