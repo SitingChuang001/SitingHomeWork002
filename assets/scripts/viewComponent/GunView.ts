@@ -12,6 +12,10 @@ export class GunView extends Component {
     private leftBound: number = 0
     private rightBound: number = 0
 
+    private isFiring: boolean = false
+    private fireInterval: number = 1 / 5
+    private fireCooldown: number = 0
+
     start() {
         this.initKeyboardListener()
         this.calculateBounds()
@@ -49,17 +53,16 @@ export class GunView extends Component {
                 this.moveDirection = 1
                 break;
             case KeyCode.SPACE:
-                if (this.fireCallback) {
-                    this.fireCallback()
-                }
+                this.isFiring = true
                 break;
         }
     }
 
     private onKeyUp(event: EventKeyboard) {
-        if (event.keyCode === KeyCode.ARROW_LEFT || event.keyCode === KeyCode.KEY_A ||
-            event.keyCode === KeyCode.ARROW_RIGHT || event.keyCode === KeyCode.KEY_D) {
-            this.moveDirection = 0 // 停止移動
+        if (event.keyCode === KeyCode.ARROW_LEFT || event.keyCode === KeyCode.ARROW_RIGHT) {
+            this.moveDirection = 0
+        } else if (event.keyCode === KeyCode.SPACE) {
+            this.isFiring = false
         }
     }
 
@@ -78,6 +81,16 @@ export class GunView extends Component {
             if (newX > this.rightBound) newX = this.rightBound
 
             this.node.setPosition(newX, this.node.position.y, this.node.position.z)
+        }
+
+        if (this.isFiring) {
+            this.fireCooldown -= deltaTime;
+            if (this.fireCooldown <= 0) {
+                this.fireCooldown = this.fireInterval
+                if (this.fireCallback) {
+                    this.fireCallback()
+                }
+            }
         }
     }
 }
