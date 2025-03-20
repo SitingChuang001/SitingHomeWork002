@@ -5,15 +5,16 @@ const { ccclass, property } = _decorator;
 @ccclass('BoyItem')
 export class BoyItem extends Component {
     @property(BoxCollider2D)
-    private collider: BoxCollider2D = null
+    public collider: BoxCollider2D = null
 
     @property(sp.Skeleton)
     private animator: sp.Skeleton = null
 
     private direction: boolean = true; // true: 右移動, false: 左移動
-    private speed: number = 100 // 速度
+    public speed: number = 100 // 速度
     private initScaleX: number
-    private onRecycleCallback: (boyItem: BoyItem) => void
+    public onRecycleCallback: (boyItem: BoyItem) => void
+    private onHitCallback: (item: BoyItem) => {}
     private canvasWidth: number
 
     onLoad() {
@@ -24,9 +25,10 @@ export class BoyItem extends Component {
         }
     }
 
-    public init(pos: Vec3, cb: (boyItem: BoyItem) => {}) {
+    public init(pos: Vec3, cb: (boyItem: BoyItem) => {}, hitCb: (boyItem: BoyItem) => {}) {
         this.node.setPosition(pos)
         this.onRecycleCallback = cb
+        this.onHitCallback = hitCb
         this.speed = 100
 
         if (this.node.position.x < -this.canvasWidth / 2) {
@@ -44,14 +46,11 @@ export class BoyItem extends Component {
 
     }
 
-    private async onHit() {
-        this.collider.group = colliderGroup.Default
-        this.speed = 0
-        await this.playAnimation("hit")
-        await this.playAnimation("death", this.onRecycleCallback)
+    private onHit() {
+        this.onHitCallback(this)
     }
 
-    private playAnimation(animationName: string, cb?: (boyItem: BoyItem) => void): Promise<void> {
+    public playAnimation(animationName: string, cb?: (boyItem: BoyItem) => void): Promise<void> {
         return new Promise((resolve) => {
             if (!this.animator) {
                 resolve()
